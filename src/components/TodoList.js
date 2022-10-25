@@ -1,24 +1,33 @@
-import React, { useState } from "react";
-import TodoForm from "./TodoForm";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import Todo from "./Todo";
-import { useEffect } from "react";
+import TodoForm from "./TodoForm";
+import { getTodos, patchTodo } from "../utils/api";
 
 function TodoList() {
   const [todos, setTodos] = useState([]);
 
   useEffect(() => {
-    console.log(todos);
-  }, [todos]);
+    getTodos().then((remoteTodos) => {
+      setTodos(remoteTodos)
+    })
+  }, []);
 
-  const addTodo = (todo) => {
+  const addTodo = async (todo) => {
     if (!todo.text || /^\s*$/.test(todo.text)) {
       return;
     }
 
-    const newTodos = [todo, ...todos];
-
-    setTodos(newTodos);
-    console.log(...todos);
+    axios
+      .post("http://localhost:3000/api/v1/to-dos", {
+        ...todo,
+        title: todo.text,
+      })
+      .then(() => {
+        getTodos().then((remoteTodos) => {
+          setTodos(remoteTodos);
+        })
+      })
   };
 
   const showDescription = (todoId) => {
@@ -36,25 +45,31 @@ function TodoList() {
       return;
     }
 
-    setTodos((prev) =>
-      prev.map((item) => (item.id === todoId ? newValue : item))
-    );
-  };
+    patchTodo(todoId, newValue).then(() => {
+      getTodos().then((remoteTodos) => {
+        setTodos(remoteTodos);
+      })
+    })
+  }
 
   const removeTodo = (id) => {
-    const removedArr = [...todos].filter((todo) => todo.id !== id);
-
-    setTodos(removedArr);
+    axios.delete(`http://localhost:3000/api/v1/to-dos/${id}`).then(() => {
+      getTodos().then((remoteTodos) => {
+        setTodos(remoteTodos);
+      })
+    })
   };
 
   const completeTodo = (id) => {
     let updatedTodos = todos.map((todo) => {
       if (todo.id === id) {
-        todo.isComplete = !todo.isComplete;
+        todo.is_done = !todo.is_done;
+        patchTodo(id, { ...todo })
       }
       return todo;
     });
     setTodos(updatedTodos);
+
   };
 
   return (

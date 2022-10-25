@@ -34,7 +34,7 @@ const Todo = ({
   return todos.map((todo, index) => (
     // <div>
     <div
-      className={todo.isComplete ? "todo-row complete" : "todo-row"}
+      className={todo.is_done ? "todo-row complete" : "todo-row"}
       key={index}
     >
       <div className="description">
@@ -43,7 +43,7 @@ const Todo = ({
           onClick={() => completeTodo(todo.id)}
           className="todo"
         >
-          {todo.text}
+          {todo.title}
         </div>
         <div className="icons">
           <RiCheckboxCircleLine
